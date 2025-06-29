@@ -127,6 +127,7 @@ export async function GET(request) {
 
     return new Response(
       JSON.stringify({ currentTrack, recentTracks, timestamp }),
+      // Cache-Busting Headers
       { 
         status: 200, 
         headers: { 
@@ -141,6 +142,7 @@ export async function GET(request) {
     console.error('Error fetching music data:', error);
     return new Response(
       JSON.stringify({ error: error.message, timestamp }),
+      // Cache-Busting Headers
       { 
         status: 500, 
         headers: { 

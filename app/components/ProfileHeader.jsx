@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { profile } from '../profile'
 import LastFMStatus from './LastFMStatus'
 
-// See ProfileHeader.jsx for how this works.
+// See profile.js for how this works.
 export default function ProfileHeader() {
   return (
     <div className="w-full max-w-2xl mx-auto mt-10 p-6 bg-white/80 dark:bg-gray-900/80 rounded-xl shadow-lg flex flex-col items-center gap-6 animate-on-load animate-fade-in-up">

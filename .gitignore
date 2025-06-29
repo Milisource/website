@@ -40,5 +40,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# sitemap
+app/sitemap.js
+sitemap.xml
+
+# other
+public/robots.txt
+
 # dumb fuck tax
 reallyimportantsecretishouldhavesomewhereelse

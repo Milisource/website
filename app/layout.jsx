@@ -19,6 +19,7 @@ export const metadata = {
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
   },
+  // This is also what Discord uses for their website embeds, if you want to tweak it.
   openGraph: {
     title: 'Demi\'s Corner',
     description: 'Track 01.',
@@ -27,8 +28,8 @@ export const metadata = {
   twitter: {
     title: 'Demi\'s Corner',
     description: 'Track 01.',
-    card: 'summary_large_image',
-  },
+    card: 'summary_large_image', // does this thing even work?
+  }
 }
 
 export default function RootLayout({ children }) {
