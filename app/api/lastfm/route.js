@@ -1,5 +1,8 @@
 import { fetchLastFMCurrentTrack, fetchLastFMRecentTracks } from './helpers.js';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const LASTFM_USERNAME = process.env.LASTFM_USERNAME;
   const LASTFM_API_KEY = process.env.LASTFM_API_KEY;

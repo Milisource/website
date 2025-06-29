@@ -1,5 +1,8 @@
 import { fetchSpotifyImage } from './helpers.js';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
   const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;

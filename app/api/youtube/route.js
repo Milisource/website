@@ -1,5 +1,8 @@
 import { fetchYouTubeThumbnail, getYouTubeQuotaStatus } from './helpers.js';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);

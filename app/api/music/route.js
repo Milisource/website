@@ -2,6 +2,9 @@ import { fetchLastFMCurrentTrack, fetchLastFMRecentTracks } from '../lastfm/help
 import { fetchSpotifyImage } from '../spotify/helpers.js';
 import { fetchYouTubeThumbnail } from '../youtube/helpers.js';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // Helper function to get best image from Last.FM images array
 function getBestLastFMImage(images) {
   if (!Array.isArray(images)) return null;
