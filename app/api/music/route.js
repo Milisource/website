@@ -5,6 +5,9 @@ import { fetchYouTubeThumbnail } from '../youtube/helpers.js';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
+// Disable caching for this route
+export const revalidate = 0;
+
 // Helper function to get best image from Last.FM images array
 function getBestLastFMImage(images) {
   if (!Array.isArray(images)) return null;
@@ -52,13 +55,24 @@ async function getImageWithFallbacks(track, youtubeApiKey) {
   return imageUrl;
 }
 
-export async function GET() {
+export async function GET(request) {
   const LASTFM_USERNAME = process.env.LASTFM_USERNAME;
   const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
   const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
+  // Add cache-busting timestamp
+  const timestamp = Date.now();
+
   if (!LASTFM_USERNAME || !LASTFM_API_KEY) {
-    return new Response(JSON.stringify({ error: 'Last.FM configuration missing' }), { status: 500, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } })
+    return new Response(JSON.stringify({ error: 'Last.FM configuration missing' }), { 
+      status: 500, 
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'X-Timestamp': timestamp.toString()
+      } 
+    })
   }
 
   try {
@@ -112,14 +126,30 @@ export async function GET() {
     recentTracks.push(...filteredTracks);
 
     return new Response(
-      JSON.stringify({ currentTrack, recentTracks }),
-      { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
+      JSON.stringify({ currentTrack, recentTracks, timestamp }),
+      { 
+        status: 200, 
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'X-Timestamp': timestamp.toString()
+        } 
+      }
     );
   } catch (error) {
     console.error('Error fetching music data:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
+      JSON.stringify({ error: error.message, timestamp }),
+      { 
+        status: 500, 
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'X-Timestamp': timestamp.toString()
+        } 
+      }
     );
   }
 } 
