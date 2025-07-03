@@ -1,7 +1,6 @@
 import { Twitter, Github, Disc2, Instagram, Linkedin, Mail, Globe, Youtube, Twitch, Facebook } from 'lucide-react'
-import { profile } from '../profile'
 
-export default function SocialLinks() {
+export default function SocialLinks({ profile }) {
   // Icon mapping for dynamic icons
   const iconMap = {
     'Twitter': Twitter,

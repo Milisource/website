@@ -10,6 +10,9 @@ RUN npm install
 # Copy rest of the app
 COPY . .
 
+# Create data directory and copy profile file before build
+RUN mkdir -p /app/data && cp /app/app/profile.js /app/data/profile.js
+
 # Build the app
 RUN npm run build
 
@@ -31,6 +34,10 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/scripts ./scripts
+
+# Copy data directory from builder
+COPY --from=builder /app/data ./data
 
 EXPOSE 3000
 

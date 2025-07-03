@@ -9,6 +9,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [lockoutUntil, setLockoutUntil] = useState(null)
+  const [sessionStatus, setSessionStatus] = useState('unknown')
   const [profile, setProfile] = useState({
     name: '',
     bio: '',
@@ -27,13 +28,57 @@ export default function AdminPage() {
   // Check if user is already logged in
   useEffect(() => {
     const savedSessionId = localStorage.getItem('adminSessionId')
+    console.log('=== ADMIN PAGE LOAD ===')
     console.log('Loading saved sessionId:', savedSessionId)
+    console.log('Current isLoggedIn state:', isLoggedIn)
+    
     if (savedSessionId) {
+      console.log('Found saved session, attempting to validate...')
       setSessionId(savedSessionId)
       setIsLoggedIn(true)
       loadProfile(savedSessionId)
+    } else {
+      console.log('No saved session found')
     }
   }, [])
+
+  // Periodic session validation
+  useEffect(() => {
+    if (!sessionId || !isLoggedIn) return
+
+    const validateSession = async () => {
+      try {
+        const response = await fetch('/api/admin/validate-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        })
+
+        const data = await response.json()
+        console.log('Periodic session validation result:', data)
+
+        if (data.isValid) {
+          setSessionStatus('valid')
+        } else {
+          setSessionStatus('invalid')
+          console.log('Session validation failed, redirecting to login')
+          handleSessionExpired()
+        }
+      } catch (error) {
+        console.error('Session validation error:', error)
+        setSessionStatus('error')
+        // Don't redirect on network errors, just log them
+      }
+    }
+
+    // Validate session every 5 minutes
+    const interval = setInterval(validateSession, 5 * 60 * 1000)
+    
+    // Also validate immediately
+    validateSession()
+
+    return () => clearInterval(interval)
+  }, [sessionId, isLoggedIn])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -46,6 +91,7 @@ export default function AdminPage() {
     }
     
     setLoading(true)
+    console.log('=== LOGIN ATTEMPT ===')
 
     const formData = new FormData(e.target)
     const username = formData.get('username')
@@ -59,6 +105,7 @@ export default function AdminPage() {
       })
 
       const data = await response.json()
+      console.log('Login response:', data)
 
       if (data.success) {
         console.log('Login successful, sessionId:', data.sessionId)
@@ -82,6 +129,7 @@ export default function AdminPage() {
         }
       }
     } catch (error) {
+      console.error('Login error:', error)
       window.showToast('Login failed. Please try again.', 'error')
     } finally {
       setLoading(false)
@@ -89,12 +137,20 @@ export default function AdminPage() {
   }
 
   const handleLogout = async () => {
+    console.log('=== LOGOUT ===')
+    console.log('Logging out with sessionId:', sessionId)
+    
     if (sessionId) {
-      await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'logout', sessionId })
-      })
+      try {
+        const response = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'logout', sessionId })
+        })
+        console.log('Logout response:', response.status)
+      } catch (error) {
+        console.error('Logout error:', error)
+      }
     }
     
     setIsLoggedIn(false)
@@ -104,6 +160,9 @@ export default function AdminPage() {
   }
 
   const loadProfile = async (sid) => {
+    console.log('=== LOADING PROFILE ===')
+    console.log('Loading profile with sessionId:', sid)
+    
     try {
       const response = await fetch('/api/admin', {
         method: 'POST',
@@ -112,6 +171,9 @@ export default function AdminPage() {
       })
 
       const data = await response.json()
+      console.log('Load profile response status:', response.status)
+      console.log('Load profile response data:', data)
+      
       if (data.success) {
         console.log('Loaded profile data:', data.profile)
         
@@ -131,9 +193,10 @@ export default function AdminPage() {
         setProfile(profileWithDefaults)
       } else if (response.status === 401) {
         // Session expired or invalid - redirect to login
-        console.log('Session expired, redirecting to login')
+        console.log('Session expired during profile load, redirecting to login')
         handleSessionExpired()
       } else {
+        console.error('Failed to load profile:', data.message)
         window.showToast('Failed to load profile', 'error')
       }
     } catch (error) {
@@ -146,6 +209,9 @@ export default function AdminPage() {
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
     setLoading(true)
+    console.log('=== UPDATING PROFILE ===')
+    console.log('Updating profile with sessionId:', sessionId)
+    console.log('Profile data to update:', profile)
 
     try {
       const response = await fetch('/api/admin', {
@@ -159,6 +225,8 @@ export default function AdminPage() {
       })
 
       const data = await response.json()
+      console.log('Update profile response status:', response.status)
+      console.log('Update profile response data:', data)
 
       if (data.success) {
         window.showToast('Profile updated successfully!', 'success')
@@ -170,6 +238,7 @@ export default function AdminPage() {
         window.showToast(data.message || 'Update failed', 'error')
       }
     } catch (error) {
+      console.error('Update profile error:', error)
       window.showToast('Update failed. Please try again.', 'error')
     } finally {
       setLoading(false)
@@ -339,9 +408,20 @@ export default function AdminPage() {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-              Profile Editor
-            </h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                Profile Editor
+              </h1>
+              {sessionStatus !== 'unknown' && (
+                <div className={`px-2 py-1 rounded text-xs font-medium ${
+                  sessionStatus === 'valid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                  sessionStatus === 'invalid' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                }`}>
+                  Session: {sessionStatus}
+                </div>
+              )}
+            </div>
             <button
               onClick={handleLogout}
               className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
