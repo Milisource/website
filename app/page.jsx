@@ -17,15 +17,20 @@ export default function Page() {
             <p className="text-lg text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto animate-on-load animate-fade-in-up animate-delay-500">
               {profile.aboutMe}
             </p>
-            {/* We could use CSS to eliminate the need for break tags. You're not gonna read this anyway. */}
-            <br />
-            <br />
-            <h2 className="text-2xl font-bold mb-3 text-center text-gray-800 dark:text-gray-200 animate-on-load animate-fade-in-up animate-delay-400">
-              Credits
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto animate-on-load animate-fade-in-up animate-delay-500">
-              <b>Profile Picture: </b><a href={profile.credits.profilePicture.url} target="_blank" rel="noopener noreferrer" className="gradient-link">{profile.credits.profilePicture.artist}</a>
-            </p>
+            
+            {/* Credits Section - Only show if credits are provided */}
+            {profile.credits?.profilePicture?.artist && profile.credits?.profilePicture?.url && (
+              <>
+                <br />
+                <br />
+                <h2 className="text-2xl font-bold mb-3 text-center text-gray-800 dark:text-gray-200 animate-on-load animate-fade-in-up animate-delay-400">
+                  Credits
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto animate-on-load animate-fade-in-up animate-delay-500">
+                  <b>Profile Picture: </b><a href={profile.credits.profilePicture.url} target="_blank" rel="noopener noreferrer" className="gradient-link">{profile.credits.profilePicture.artist}</a>
+                </p>
+              </>
+            )}
           </div>
         </section>
         {/* Social Links */}
